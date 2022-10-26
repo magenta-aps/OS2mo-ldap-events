@@ -4,13 +4,38 @@ services:
 
   mo_ldap_events:
     build: .
-    command: "poetry run python -m mo_ldap_events.ldap_agent next-events-to-queue"
+    # command: "poetry run python -m mo_ldap_events.ldap"
+    command: [ "uvicorn", "--factory", "mo_ldap_events.main:create_app", "--host", "0.0.0.0", "--reload" ]
     environment:
       amqp_url: amqp://guest:guest@msg_broker
+      AD_CONTROLLERS: '[{"host": "mo_ldap_events_test_ldap:1389"}]'
+      AD_DOMAIN: "AD"
+      AD_USER: "admin"
+      AD_PASSWORD: "password"
+      AD_SEARCH_BASE: "dc=ad,dc=addev"
+      CLIENT_ID: "dipex"
+      CLIENT_SECRET: "603f1c82-d012-4d04-9382-dbe659c533fb"
+      AUTH_SERVER: "http://keycloak:8080/auth"
     volumes:
-      - ./mo_ldap_events:/opt/app/
+      - ./mo_ldap_events:/opt/app/mo_ldap_events/
     networks:
       - os2mo_default
+    depends_on:
+      - mo_ldap_events_test_ldap
+
+  mo_ldap_events_test_ldap:
+    image: bitnami/openldap
+    environment:
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=password
+      - LDAP_USER_DC=ad
+      - LDAP_ROOT=dc=ad,dc=addev
+      - LDAP_USERS=user01,user02
+      - LDAP_PASSWORDS=password1,password2
+    networks:
+      - os2mo_default
+    ports:
+      - "389:1389"
 
 networks:
   os2mo_default:
