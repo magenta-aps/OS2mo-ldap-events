@@ -1,21 +1,21 @@
-import asyncio
+import os
 import os
 import time
 from collections.abc import Iterator
 from datetime import datetime
 from typing import Dict
 from unittest.mock import MagicMock
-from unittest.mock import patch
 
 import pytest
 import pytz
-from ldap3 import Connection, ASYNC_STREAM, MOCK_ASYNC, MODIFY_REPLACE
+from ldap3 import Connection, MODIFY_REPLACE
 from ldap3 import MOCK_SYNC
 from ldap3 import Server
 
 from mo_ldap_events.config import Settings
 from mo_ldap_events.ldap import configure_ad_connection, setup_poller, datetime_to_ldap_timestamp
 from mo_ldap_events.ldap import construct_server
+
 
 @pytest.fixture
 def ad_connection() -> Iterator[MagicMock]:
@@ -28,7 +28,7 @@ def ad_connection() -> Iterator[MagicMock]:
 
 
 @pytest.fixture
-def settings_overrides() -> Iterator[dict[str, str]]:
+def settings_overrides() -> Iterator[Dict[str, str]]:
     """Fixture to construct dictionary of minimal overrides for valid settings.
 
     Yields:
@@ -48,8 +48,8 @@ def settings_overrides() -> Iterator[dict[str, str]]:
 
 @pytest.fixture
 def load_settings_overrides(
-        settings_overrides: dict[str, str], monkeypatch: pytest.MonkeyPatch
-) -> Iterator[dict[str, str]]:
+        settings_overrides: Dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> Iterator[Dict[str, str]]:
     """Fixture to set happy-path settings overrides as environmental variables.
 
     Note:
@@ -69,13 +69,13 @@ def load_settings_overrides(
     yield settings_overrides
 
 
-def test_construct_server(load_settings_overrides: dict[str, str]) -> None:
+def test_construct_server(load_settings_overrides: Dict[str, str]) -> None:
     settings = Settings()
     server = construct_server(settings.ad_controllers[0])
     assert isinstance(server, Server)
 
 
-def test_configure_ad_connection(load_settings_overrides: dict[str, str]) -> None:
+def test_configure_ad_connection(load_settings_overrides: Dict[str, str]) -> None:
     settings = Settings()
     connection = configure_ad_connection(settings)
     assert isinstance(connection, Connection)
