@@ -151,6 +151,7 @@ def _poller(
             search_parameters, last_search_time
         )
         last_search_time = datetime.now(tz=pytz.utc)
+        print("polling")
         connection.search(**search_parameters)
         if connection.response:
             for event in connection.response:

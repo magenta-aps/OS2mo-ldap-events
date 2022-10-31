@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 import pytz
-from ldap3 import Connection, ASYNC_STREAM, MOCK_ASYNC
+from ldap3 import Connection, ASYNC_STREAM, MOCK_ASYNC, MODIFY_REPLACE
 from ldap3 import MOCK_SYNC
 from ldap3 import Server
 
@@ -113,6 +113,17 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
             "cn": "tester",
             "email": "test@example.com",
             "modifyTimestamp": datetime_to_ldap_timestamp(datetime.now(tz=pytz.utc))
+        }
+    )
+    time.sleep(1)
+    assert hits == ["{e38bf5d7-342a-4fce-a38f-ca197625c98e}"]
+
+    del hits[:]
+    connection.modify(
+        "dc=ad,cn=tester2,ou=test,dc=ad",
+        {
+            "email": [(MODIFY_REPLACE, "test2@example.com")],
+            "modifyTimestamp": [(MODIFY_REPLACE, datetime_to_ldap_timestamp(datetime.now(tz=pytz.utc)))]
         }
     )
     time.sleep(1)
