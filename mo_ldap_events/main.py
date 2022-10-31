@@ -16,6 +16,7 @@ from ldap3 import Connection, RESTARTABLE, ASYNC_STREAM
 
 from .config import Settings
 from .ldap import configure_ad_connection
+
 # from .ldap import ad_healthcheck
 from .ldap import setup_listener
 
@@ -41,6 +42,7 @@ def listener(event):
     else:
         print(f"Got event without objectGUID: {event}")
 
+
 def create_fastramqpi(**kwargs: Any) -> FastRAMQPI:
     """FastRAMQPI factory.
 
@@ -51,12 +53,14 @@ def create_fastramqpi(**kwargs: Any) -> FastRAMQPI:
     fastramqpi = FastRAMQPI(application_name="adevent", settings=settings.fastramqpi)
     fastramqpi.add_context(settings=settings)
 
-    ad_async_connection = configure_ad_connection(settings, client_strategy=ASYNC_STREAM)
+    ad_async_connection = configure_ad_connection(
+        settings, client_strategy=ASYNC_STREAM
+    )
     fastramqpi.add_context(ad_async_connection=ad_async_connection)
     ad_sync_connection = configure_ad_connection(settings, client_strategy=RESTARTABLE)
     fastramqpi.add_context(ad_sync_connection=ad_sync_connection)
-    #fastramqpi.add_healthcheck(name="ADConnection", healthcheck=ad_healthcheck)
-    #fastramqpi.add_lifespan_manager(open_ad_connection(ad_async_connection), 1500)
+    # fastramqpi.add_healthcheck(name="ADConnection", healthcheck=ad_healthcheck)
+    # fastramqpi.add_lifespan_manager(open_ad_connection(ad_async_connection), 1500)
 
     context = fastramqpi.get_context()
     setup_listener(context, listener)

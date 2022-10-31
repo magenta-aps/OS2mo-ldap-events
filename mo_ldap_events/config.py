@@ -8,7 +8,6 @@ from pydantic import parse_obj_as
 from fastramqpi.config import Settings as FastRAMQPISettings
 
 
-
 class ServerConfig(BaseModel):
     """Settings model for domain controllers."""
 
