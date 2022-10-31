@@ -1,5 +1,5 @@
 # Opret en agent der modtager amqp-events og importerer og eksporterer til LDAP
-import threading
+from threading import Thread
 import time
 from datetime import datetime
 from ssl import CERT_NONE
@@ -38,7 +38,6 @@ def construct_server(server_config: ServerConfig) -> Server:
 def configure_ad_connection(
     settings: Settings, client_strategy=ASYNC_STREAM
 ) -> Connection:
-    print("configure_ad_connection")
     """Configure an AD connection.
 
     Args:
@@ -50,11 +49,7 @@ def configure_ad_connection(
     servers = list(map(construct_server, settings.ad_controllers))
     # Pick the next server to use at random, discard non-active servers
     server_pool = ServerPool(servers, RANDOM, active=True, exhaust=True)
-    print(server_pool)
-    print(settings.ad_domain + "\\" + settings.ad_user)
-    print(settings.ad_password.get_secret_value())
 
-    print(Server(host="mo_ldap_events_test_ldap", port=1389, get_info=ALL))
     connection = Connection(
         server=server_pool,
         # We always authenticate via NTLM
@@ -66,27 +61,11 @@ def configure_ad_connection(
         pool_keepalive=True,
         auto_bind="DEFAULT",
     )
-    # connection = Connection(
-    #     server=server_pool,
-    #     # We always authenticate via NTLM
-    #     # user=settings.ad_domain + "\\" + settings.ad_user,
-    #     user=f"cn=admin,dc=ad,dc=addev",
-    #     # password=settings.ad_password.get_secret_value(),
-    #     password="password",
-    #     # authentication=NTLM,
-    #     # client_strategy=RESTARTABLE,
-    #     client_strategy=client_strategy,
-    #     read_only=True,
-    #     pool_keepalive=True,
-    #     auto_bind="DEFAULT",
-    # )
-    print("got connection")
 
     return connection
 
 
 def setup_listener(context: Context, callback: Callable):
-    print("setup_listener")
 
     connection = context["user_context"]["ad_async_connection"]
 
@@ -99,6 +78,7 @@ def setup_listener(context: Context, callback: Callable):
         # controls=None,
     }
 
+    now = datetime.now(tz=pytz.utc)
     setup_persistent_search(context, callback, search_parameters)
 
     # MS Persistent search, gives only modifications, not creates or deletes
@@ -114,7 +94,7 @@ def setup_listener(context: Context, callback: Callable):
     #
 
     # Polling search
-    # setup_poller(context, callback, search_parameters, now)
+    setup_poller(context, callback, search_parameters, now)
 
 
 def setup_persistent_search(
@@ -155,23 +135,27 @@ def _poller(
     search_parameters: dict,
     callback: Callable,
     init_search_time: datetime,
+    poll_time: int = 5,
 ) -> None:
     """
-    Method to run in a thread, that polls the LDAP server every 5 seconds,
+    Method to run in a thread, that polls the LDAP server every poll_time seconds,
     with a search that includes the timestamp for the last search
     and calls the `callback` for each result found
     """
     last_search_time = init_search_time
+    if poll_time < 1:
+        poll_time = 1
     while True:
-        time.sleep(5)
+        time.sleep(poll_time)
         search_parameters = set_search_params_modify_timestamp(
             search_parameters, last_search_time
         )
         last_search_time = datetime.now(tz=pytz.utc)
         connection.search(**search_parameters)
-        for event in connection.response:
-            if event.get("type") == "searchResEntry":
-                callback(event)
+        if connection.response:
+            for event in connection.response:
+                if event.get("type") == "searchResEntry":
+                    callback(event)
 
 
 def setup_poller(
@@ -179,29 +163,35 @@ def setup_poller(
     callback: Callable,
     search_parameters: dict,
     init_search_time: datetime = None,
-):
+    poll_time: int = 5,
+) -> Thread:
     connection = context["user_context"]["ad_sync_connection"]
     if init_search_time is None:
         init_search_time = datetime.now(tz=pytz.utc)
-    poll = threading.Thread(
+    poll = Thread(
         target=_poller,
-        args=(connection, search_parameters, callback, init_search_time),
+        args=(connection, search_parameters, callback, init_search_time, poll_time),
         daemon=True,
     )
     poll.start()
+    return poll
 
 
 def set_search_params_modify_timestamp(search_parameters: Dict, timestamp: datetime):
-    changed_str = (
-        "(modifyTimestamp>="
-        + timestamp.strftime("%Y%m%d%H%M%S")
-        + "."
-        + str(int(timestamp.microsecond / 1000))
-        + (timestamp.strftime("%z") or "-0000")
-        + ")"
-    )
-    print(changed_str)
+    changed_str = f"(modifyTimestamp>={datetime_to_ldap_timestamp(timestamp)})"
+    search_filter = search_parameters["search_filter"]
+    if not search_filter.startswith("(") or not search_filter.endswith(")"):
+        search_filter = f"({search_filter})"
     return {
         **search_parameters,
-        "search_filter": "(&" + changed_str + search_parameters["search_filter"] + ")",
+        "search_filter": "(&" + changed_str + search_filter + ")",
     }
+
+
+def datetime_to_ldap_timestamp(dt: datetime):
+    return "".join([
+        dt.strftime("%Y%m%d%H%M%S"),
+        ".",
+        str(int(dt.microsecond / 1000)),
+        (dt.strftime("%z") or "-0000"),
+    ])
