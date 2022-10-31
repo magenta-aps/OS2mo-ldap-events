@@ -1,15 +1,15 @@
 # Opret en agent der modtager amqp-events og importerer og eksporterer til LDAP
-from threading import Thread
 import time
 from datetime import datetime
 from ssl import CERT_NONE
 from ssl import CERT_REQUIRED
+from threading import Thread
 from typing import Callable, Dict
 
 import pytz as pytz
 from fastramqpi.context import Context
 from ldap3 import Connection, Server, ServerPool, Tls
-from ldap3 import NTLM, RANDOM, ASYNC_STREAM, ALL
+from ldap3 import NTLM, RANDOM, ASYNC_STREAM
 
 from .config import ServerConfig, Settings
 
@@ -67,8 +67,6 @@ def configure_ad_connection(
 
 def setup_listener(context: Context, callback: Callable):
 
-    connection = context["user_context"]["ad_async_connection"]
-
     search_parameters = {
         "search_base": "dc=ad,dc=addev",
         "search_filter": "(cn=*)",
@@ -81,20 +79,8 @@ def setup_listener(context: Context, callback: Callable):
     now = datetime.now(tz=pytz.utc)
     setup_persistent_search(context, callback, search_parameters)
 
-    # MS Persistent search, gives only modifications, not creates or deletes
-    # connection.extend.microsoft.persistent_search(
-    #     **{
-    #         key: value
-    #         for key, value in search_parameters.items()
-    #         if key in ("search_base", "attributes")
-    #     },
-    #     streaming=False,
-    #     callback=ad_listener,
-    # )
-    #
-
     # Polling search
-    setup_poller(context, callback, search_parameters, now)
+    # setup_poller(context, callback, search_parameters, now)
 
 
 def setup_persistent_search(
@@ -151,7 +137,6 @@ def _poller(
             search_parameters, last_search_time
         )
         last_search_time = datetime.now(tz=pytz.utc)
-        print("polling")
         connection.search(**search_parameters)
         if connection.response:
             for event in connection.response:

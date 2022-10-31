@@ -12,7 +12,11 @@ from ldap3 import MOCK_SYNC
 from ldap3 import Server
 
 from mo_ldap_events.config import Settings
-from mo_ldap_events.ldap import configure_ad_connection, setup_poller, datetime_to_ldap_timestamp
+from mo_ldap_events.ldap import (
+    configure_ad_connection,
+    setup_poller,
+    datetime_to_ldap_timestamp,
+)
 from mo_ldap_events.ldap import construct_server
 
 
@@ -47,7 +51,7 @@ def settings_overrides() -> Iterator[Dict[str, str]]:
 
 @pytest.fixture
 def load_settings_overrides(
-        settings_overrides: Dict[str, str], monkeypatch: pytest.MonkeyPatch
+    settings_overrides: Dict[str, str], monkeypatch: pytest.MonkeyPatch
 ) -> Iterator[Dict[str, str]]:
     """Fixture to set happy-path settings overrides as environmental variables.
 
@@ -81,8 +85,13 @@ def test_configure_ad_connection(load_settings_overrides: Dict[str, str]) -> Non
 
 
 def test_poller(load_settings_overrides: Dict[str, str]) -> None:
-    server = Server('fake_server')
-    connection = Connection(server, user='cn=user,ou=test,o=lab', password='my_password', client_strategy=MOCK_SYNC)
+    server = Server("fake_server")
+    connection = Connection(
+        server,
+        user="cn=user,ou=test,o=lab",
+        password="my_password",
+        client_strategy=MOCK_SYNC,
+    )
     connection.bind()
 
     def listener(event):
@@ -100,9 +109,9 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
         search_parameters={
             "search_base": "dc=ad",
             "search_filter": "cn=*",
-            "attributes": ["objectGUID"]
+            "attributes": ["objectGUID"],
         },
-        poll_time=1
+        poll_time=1,
     )
     time.sleep(1)
     connection.strategy.add_entry(
@@ -111,8 +120,8 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
             "objectGUID": "{e38bf5d7-342a-4fce-a38f-ca197625c98e}",
             "cn": "tester",
             "email": "test@example.com",
-            "modifyTimestamp": datetime_to_ldap_timestamp(datetime.now(tz=pytz.utc))
-        }
+            "modifyTimestamp": datetime_to_ldap_timestamp(datetime.now(tz=pytz.utc)),
+        },
     )
     time.sleep(1)
     assert hits == ["{e38bf5d7-342a-4fce-a38f-ca197625c98e}"]
@@ -122,8 +131,10 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
         "dc=ad,cn=tester2,ou=test,dc=ad",
         {
             "email": [(MODIFY_REPLACE, "test2@example.com")],
-            "modifyTimestamp": [(MODIFY_REPLACE, datetime_to_ldap_timestamp(datetime.now(tz=pytz.utc)))]
-        }
+            "modifyTimestamp": [
+                (MODIFY_REPLACE, datetime_to_ldap_timestamp(datetime.now(tz=pytz.utc)))
+            ],
+        },
     )
     time.sleep(1)
     assert hits == ["{e38bf5d7-342a-4fce-a38f-ca197625c98e}"]
