@@ -1,9 +1,8 @@
 import os
-import os
 import time
 from collections.abc import Iterator
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
 from unittest.mock import MagicMock
 
 import pytest
@@ -94,7 +93,7 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
             else:
                 hits.append(objectGUID)
 
-    hits = []
+    hits: List[str] = []
     setup_poller(
         context={"user_context": {"ad_sync_connection": connection}},
         callback=listener,

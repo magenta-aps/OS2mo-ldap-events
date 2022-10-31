@@ -190,9 +190,11 @@ def set_search_params_modify_timestamp(search_parameters: Dict, timestamp: datet
 
 
 def datetime_to_ldap_timestamp(dt: datetime):
-    return "".join([
-        dt.strftime("%Y%m%d%H%M%S"),
-        ".",
-        str(int(dt.microsecond / 1000)),
-        (dt.strftime("%z") or "-0000"),
-    ])
+    return "".join(
+        [
+            dt.strftime("%Y%m%d%H%M%S"),
+            ".",
+            str(int(dt.microsecond / 1000)),
+            (dt.strftime("%z") or "-0000"),
+        ]
+    )
