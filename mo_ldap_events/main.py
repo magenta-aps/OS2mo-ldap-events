@@ -16,7 +16,6 @@ from ldap3 import Connection, RESTARTABLE, ASYNC_STREAM
 
 from .config import Settings
 from .ldap import configure_ad_connection
-# from .ldap import ad_healthcheck
 from .ldap import setup_listener
 
 logger = structlog.get_logger()
