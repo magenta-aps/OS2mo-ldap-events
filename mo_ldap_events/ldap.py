@@ -76,7 +76,7 @@ def setup_listener(context: Context, callback: Callable):
         # controls=None,
     }
 
-    now = datetime.now(tz=pytz.utc)
+    # now = datetime.now(tz=pytz.utc)
     setup_persistent_search(context, callback, search_parameters)
 
     # Polling search
