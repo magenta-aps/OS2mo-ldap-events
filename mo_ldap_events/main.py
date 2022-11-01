@@ -4,8 +4,6 @@
 """Event handling."""
 import logging
 import sys
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from typing import Any
 
 import structlog
@@ -13,7 +11,6 @@ from fastapi import APIRouter
 from fastapi import FastAPI
 from fastramqpi.main import FastRAMQPI
 from ldap3 import ASYNC_STREAM
-from ldap3 import Connection
 from ldap3 import RESTARTABLE
 
 from .config import Settings
