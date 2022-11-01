@@ -24,15 +24,13 @@ logger = structlog.get_logger()
 fastapi_router = APIRouter()
 
 
+"""
 @asynccontextmanager
 async def open_ad_connection(ad_connection: Connection) -> AsyncIterator[None]:
-    """Open the AD connection during FastRAMQPI lifespan.
-
-    Yields:
-        None
-    """
+    # Open the AD connection during FastRAMQPI lifespan.
     with ad_connection:
         yield
+"""
 
 
 def listener(event):
