@@ -2,7 +2,7 @@ import os
 import time
 from collections.abc import Iterator
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Callable
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
@@ -17,18 +17,13 @@ from ldap3 import MOCK_SYNC
 from ldap3 import Server
 
 from mo_ldap_events.ldap import datetime_to_ldap_timestamp
-from mo_ldap_events.main import create_app
+from mo_ldap_events.main import create_app, listener
 from mo_ldap_events.main import create_fastramqpi
 
 
 @pytest.fixture
-def ad_sync_connection() -> Iterator[MagicMock]:
-    """Fixture to construct a mock ad_connection.
-
-    Yields:
-        A mock for ad_connection.
-    """
-    connections = {}
+def ad_sync_connection() -> Iterator[Callable]:
+    connections: Dict[Connection] = {}
 
     def method(settings, client_strategy):
         print("METHOD CALLED")
@@ -152,3 +147,9 @@ def test_poller(
         ]
         found_guids = [x for lst in found_guid_lists for x in lst]
         assert guid in found_guids
+
+
+def test_listener():
+    # Dummy test for stub listener
+    listener(None)
+    listener({"attributes":{"objectGUID": "{e38bf5d7-342a-4fce-a38f-ca197625c98e}"}})
