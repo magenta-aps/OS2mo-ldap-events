@@ -48,8 +48,6 @@ def create_fastramqpi(**kwargs: Any) -> FastRAMQPI:
     fastramqpi = FastRAMQPI(application_name="adevent", settings=settings.fastramqpi)
     fastramqpi.add_context(settings=settings)
 
-    print(f"configure_ad_connection: {configure_ad_connection}")
-
     ad_async_connection = configure_ad_connection(
         settings, client_strategy=ASYNC_STREAM
     )

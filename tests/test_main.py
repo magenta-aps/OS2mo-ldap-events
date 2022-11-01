@@ -47,16 +47,6 @@ def ad_sync_connection() -> Iterator[Callable]:
     yield method
 
 
-# objectGUIDs = []
-# @pytest.fixture()
-# def listener() -> Iterator[Callable]:
-#     def _listener(event):
-#         print("listener called")
-#         objectGUID = event.get("attributes", {}).get("objectGUID", None)
-#         objectGUIDs.append(objectGUID)
-#     yield _listener
-
-
 @pytest.fixture
 def fastramqpi(
     disable_metrics: None, load_settings_overrides: dict[str, str]
