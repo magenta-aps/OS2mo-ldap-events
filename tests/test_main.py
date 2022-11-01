@@ -2,8 +2,7 @@ import os
 import time
 from collections.abc import Iterator
 from datetime import datetime
-from typing import Dict, Callable
-from typing import List
+from typing import Dict
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
@@ -17,7 +16,6 @@ from ldap3 import MOCK_ASYNC
 from ldap3 import MOCK_SYNC
 from ldap3 import Server
 
-import mo_ldap_events
 from mo_ldap_events.ldap import datetime_to_ldap_timestamp
 from mo_ldap_events.main import create_app
 from mo_ldap_events.main import create_fastramqpi
@@ -31,6 +29,7 @@ def ad_sync_connection() -> Iterator[MagicMock]:
         A mock for ad_connection.
     """
     connections = {}
+
     def method(settings, client_strategy):
         print("METHOD CALLED")
         if client_strategy == ASYNC_STREAM:
@@ -48,6 +47,7 @@ def ad_sync_connection() -> Iterator[MagicMock]:
         )
         connections[client_strategy].bind()
         return connections[client_strategy]
+
     yield method
 
 
@@ -126,7 +126,9 @@ def load_settings_overrides(
     yield settings_overrides
 
 
-def test_poller(load_settings_overrides: Dict[str, str], ad_sync_connection, mocker) -> None:
+def test_poller(
+    load_settings_overrides: Dict[str, str], ad_sync_connection, mocker
+) -> None:
     patched_listener = mocker.patch("mo_ldap_events.main.listener")
     guid = "{e38bf5d7-342a-4fce-a38f-ca197625c98e}"
     with patch("mo_ldap_events.main.configure_ad_connection", ad_sync_connection):
@@ -137,11 +139,16 @@ def test_poller(load_settings_overrides: Dict[str, str], ad_sync_connection, moc
                 "objectGUID": guid,
                 "cn": "tester",
                 "email": "test@example.com",
-                "modifyTimestamp": datetime_to_ldap_timestamp(datetime.now(tz=pytz.utc)),
+                "modifyTimestamp": datetime_to_ldap_timestamp(
+                    datetime.now(tz=pytz.utc)
+                ),
             },
         )
         time.sleep(6)  # Poller retries every 5 seconds
         patched_listener.assert_called()
-        found_guid_lists = [call.args[0].get("attributes", {}).get("objectGUID", None) for call in patched_listener.call_args_list]
-        found_guids = [x for l in found_guid_lists for x in l]
+        found_guid_lists = [
+            call.args[0].get("attributes", {}).get("objectGUID", None)
+            for call in patched_listener.call_args_list
+        ]
+        found_guids = [x for lst in found_guid_lists for x in lst]
         assert guid in found_guids
