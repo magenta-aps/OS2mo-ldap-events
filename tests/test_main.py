@@ -7,8 +7,9 @@ from unittest.mock import patch
 import pytest
 from fastapi import FastAPI
 from fastramqpi.main import FastRAMQPI
-from mo_ldap_events.main import create_fastramqpi
+
 from mo_ldap_events.main import create_app
+from mo_ldap_events.main import create_fastramqpi
 
 
 @pytest.fixture

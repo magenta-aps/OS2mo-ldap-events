@@ -83,12 +83,16 @@ def setup_listener(context: Context, callback: Callable):
         # controls=None,
     }
 
-    # now = datetime.now(tz=pytz.utc)
-    setup_persistent_search(context, callback, search_parameters)
+    now = datetime.now(tz=pytz.utc)
+    # setup_persistent_search(context, callback, search_parameters)
 
     # Polling search
-    # setup_poller(context, callback, search_parameters, now)
+    setup_poller(context, callback, search_parameters, now)
 
+
+"""
+We currently lack a good way of testing this; ldap3 can't, and OpenLDAP and AD
+don't work properly with it either
 
 def setup_persistent_search(
     context: Context, callback: Callable, search_parameters: dict
@@ -96,13 +100,12 @@ def setup_persistent_search(
     connection = context["user_context"]["ad_async_connection"]
 
     def ad_listener(event: dict) -> None:
-        """
-        Callback for our persistent search
-        Persistent searches are specified in https://www.ietf.org/proceedings/50/I-D/ldapext-psearch-03.txt
-        but not all LDAP servers implement this
-        If LDAP server does not support persistent searches, the search will run as a normal search,
-        and we will get an event of type "searchResDone"
-        """
+        #Callback for our persistent search
+        #Persistent searches are specified in https://www.ietf.org/proceedings/50/I-D/ldapext-psearch-03.txt
+        #but not all LDAP servers implement this
+        #If LDAP server does not support persistent searches, the search will run as a normal search,
+        #and we will get an event of type "searchResDone"
+       
         if event.get("type") == "searchResDone":
             print(
                 "Got SearchResultsDone in Persistent Search - Persistent Search is not supported by LDAP server, falling back to polling search"
@@ -121,6 +124,7 @@ def setup_persistent_search(
         callback=ad_listener,
         changes_only=True,
     )
+"""
 
 
 def _poller(
