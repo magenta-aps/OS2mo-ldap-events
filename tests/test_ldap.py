@@ -103,7 +103,7 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
                 hits.append(objectGUID)
 
     hits: List[str] = []
-    setup_poller(
+    p = setup_poller(
         context={"user_context": {"ad_sync_connection": connection}},
         callback=listener,
         search_parameters={
@@ -126,7 +126,7 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
     time.sleep(1.5)
     assert hits == ["{e38bf5d7-342a-4fce-a38f-ca197625c98e}"]
 
-    del hits[:]
+    del hits[:]  # Empty list in-place
     connection.modify(
         "dc=ad,cn=tester2,ou=test,dc=ad",
         {
@@ -138,3 +138,6 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
     )
     time.sleep(1.5)
     assert hits == ["{e38bf5d7-342a-4fce-a38f-ca197625c98e}"]
+    print("joining")
+    p.join(0)
+    print("done")
