@@ -111,7 +111,7 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
             "search_filter": "cn=*",
             "attributes": ["objectGUID"],
         },
-        poll_time=1,
+        poll_time=0,  # gets corrected to 1
     )
     time.sleep(1)
     connection.strategy.add_entry(

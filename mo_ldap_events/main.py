@@ -60,7 +60,7 @@ def create_fastramqpi(**kwargs: Any) -> FastRAMQPI:
     ad_sync_connection = configure_ad_connection(settings, client_strategy=RESTARTABLE)
     fastramqpi.add_context(ad_sync_connection=ad_sync_connection)
     # fastramqpi.add_healthcheck(name="ADConnection", healthcheck=ad_healthcheck)
-    # fastramqpi.add_lifespan_manager(open_ad_connection(ad_async_connection), 1500)
+    fastramqpi.add_lifespan_manager(open_ad_connection(ad_async_connection), 1500)
 
     context = fastramqpi.get_context()
     setup_listener(context, listener)
