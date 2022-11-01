@@ -151,5 +151,5 @@ def test_poller(
 
 def test_listener():
     # Dummy test for stub listener
-    listener(None)
+    listener({})
     listener({"attributes":{"objectGUID": "{e38bf5d7-342a-4fce-a38f-ca197625c98e}"}})
