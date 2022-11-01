@@ -75,7 +75,7 @@ def configure_ad_connection(
 def setup_listener(context: Context, callback: Callable):
 
     search_parameters = {
-        "search_base": "dc=ad,dc=addev",
+        "search_base": "dc=ad",
         "search_filter": "(cn=*)",
         # search_scope=SUBTREE,
         # dereference_aliases=DEREF_NEVER,
@@ -105,7 +105,7 @@ def setup_persistent_search(
         #but not all LDAP servers implement this
         #If LDAP server does not support persistent searches, the search will run as a normal search,
         #and we will get an event of type "searchResDone"
-       
+
         if event.get("type") == "searchResDone":
             print(
                 "Got SearchResultsDone in Persistent Search - Persistent Search is not supported by LDAP server, falling back to polling search"
@@ -144,11 +144,11 @@ def _poller(
         poll_time = 1
     while True:
         time.sleep(poll_time)
-        search_parameters = set_search_params_modify_timestamp(
+        timed_search_parameters = set_search_params_modify_timestamp(
             search_parameters, last_search_time
         )
         last_search_time = datetime.now(tz=pytz.utc)
-        connection.search(**search_parameters)
+        connection.search(**timed_search_parameters)
         if connection.response:
             for event in connection.response:
                 if event.get("type") == "searchResEntry":

@@ -26,6 +26,7 @@ pytz = "^2022.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
+pytest-mock = "^3.10.0"
 black = "^22.3.0"
 reorder-python-imports = "^3.1.0"
 mypy = "^0.950"

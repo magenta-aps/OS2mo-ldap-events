@@ -138,6 +138,4 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
     )
     time.sleep(1.5)
     assert hits == ["{e38bf5d7-342a-4fce-a38f-ca197625c98e}"]
-    print("joining")
     p.join(0)
-    print("done")
