@@ -12,7 +12,9 @@ import structlog
 from fastapi import APIRouter
 from fastapi import FastAPI
 from fastramqpi.main import FastRAMQPI
-from ldap3 import Connection, RESTARTABLE, ASYNC_STREAM
+from ldap3 import ASYNC_STREAM
+from ldap3 import Connection
+from ldap3 import RESTARTABLE
 
 from .config import Settings
 from .ldap import configure_ad_connection

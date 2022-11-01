@@ -4,14 +4,21 @@ from datetime import datetime
 from ssl import CERT_NONE
 from ssl import CERT_REQUIRED
 from threading import Thread
-from typing import Callable, Dict
+from typing import Callable
+from typing import Dict
 
 import pytz as pytz
 from fastramqpi.context import Context
-from ldap3 import Connection, Server, ServerPool, Tls
-from ldap3 import NTLM, RANDOM, ASYNC_STREAM
+from ldap3 import ASYNC_STREAM
+from ldap3 import Connection
+from ldap3 import NTLM
+from ldap3 import RANDOM
+from ldap3 import Server
+from ldap3 import ServerPool
+from ldap3 import Tls
 
-from .config import ServerConfig, Settings
+from .config import ServerConfig
+from .config import Settings
 
 
 def construct_server(server_config: ServerConfig) -> Server:

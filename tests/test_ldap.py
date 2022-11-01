@@ -2,22 +2,22 @@ import os
 import time
 from collections.abc import Iterator
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict
+from typing import List
 from unittest.mock import MagicMock
 
 import pytest
 import pytz
-from ldap3 import Connection, MODIFY_REPLACE
+from ldap3 import Connection
 from ldap3 import MOCK_SYNC
+from ldap3 import MODIFY_REPLACE
 from ldap3 import Server
 
 from mo_ldap_events.config import Settings
-from mo_ldap_events.ldap import (
-    configure_ad_connection,
-    setup_poller,
-    datetime_to_ldap_timestamp,
-)
+from mo_ldap_events.ldap import configure_ad_connection
 from mo_ldap_events.ldap import construct_server
+from mo_ldap_events.ldap import datetime_to_ldap_timestamp
+from mo_ldap_events.ldap import setup_poller
 
 
 @pytest.fixture
@@ -123,7 +123,7 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
             "modifyTimestamp": datetime_to_ldap_timestamp(datetime.now(tz=pytz.utc)),
         },
     )
-    time.sleep(1)
+    time.sleep(1.5)
     assert hits == ["{e38bf5d7-342a-4fce-a38f-ca197625c98e}"]
 
     del hits[:]
@@ -136,5 +136,5 @@ def test_poller(load_settings_overrides: Dict[str, str]) -> None:
             ],
         },
     )
-    time.sleep(1)
+    time.sleep(1.5)
     assert hits == ["{e38bf5d7-342a-4fce-a38f-ca197625c98e}"]
