@@ -135,7 +135,7 @@ def _poller(
     poll_time: int = 5,
 ) -> None:
     """
-    Method to run in a thread, that polls the LDAP server every poll_time seconds,
+    Method to run in a thread that polls the LDAP server every poll_time seconds,
     with a search that includes the timestamp for the last search
     and calls the `callback` for each result found
     """
